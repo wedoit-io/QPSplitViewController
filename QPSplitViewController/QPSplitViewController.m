@@ -10,10 +10,10 @@
 #import "QPSplitView.h"
 
 @interface QPSplitViewController ()
-{
-    
-}
+
+@property (assign, nonatomic) CGFloat startingLeftSplitWidth;
 @property (strong, nonatomic) QPSplitView *splitView;
+
 @end
 
 @implementation QPSplitViewController
@@ -100,6 +100,8 @@
         [_splitView.rightView addSubview:rightController.view];
         [rightController didMoveToParentViewController:self];
         _rightController = rightController;
+        
+        [self setLeftBarButtonItem];
     }
 }
 
@@ -133,6 +135,52 @@
     [_splitView.rightView addSubview:newRightController.view];
     [newRightController didMoveToParentViewController:self];
     _rightController = newRightController;
+    
+    [self setLeftBarButtonItem];
+}
+
+#pragma mark -
+#pragma mark Left bar button item for right panel
+
+- (UIBarButtonItem *)leftButtonForCenterPanel
+{
+    return [[UIBarButtonItem alloc] initWithImage:[[self class] defaultImage] style:UIBarButtonItemStylePlain target:self action:@selector(toggleLeftSplit:)];
+}
+
++ (UIImage *)defaultImage {
+    static UIImage *defaultImage = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        UIGraphicsBeginImageContextWithOptions(CGSizeMake(20.f, 13.f), NO, 0.0f);
+        
+        [[UIColor whiteColor] setFill];
+        [[UIBezierPath bezierPathWithRect:CGRectMake(0, 1, 20, 2)] fill];
+        [[UIBezierPath bezierPathWithRect:CGRectMake(0, 6,  20, 2)] fill];
+        [[UIBezierPath bezierPathWithRect:CGRectMake(0, 11, 20, 2)] fill];
+        
+        defaultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+    });
+    return defaultImage;
+}
+
+- (void)setLeftBarButtonItem {
+    if ([_rightController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *navCtrl = (UINavigationController *)_rightController;
+        navCtrl.topViewController.navigationItem.leftBarButtonItem = [self leftButtonForCenterPanel];
+    }
+}
+
+- (void)toggleLeftSplit:(id)sender {
+    [UIView animateWithDuration:0.25f animations:^{
+        if (self.leftSplitWidth == 0) {
+            self.leftSplitWidth = self.startingLeftSplitWidth;
+        } else {
+            self.startingLeftSplitWidth = self.leftSplitWidth;
+            self.leftSplitWidth = 0;
+        }
+    }];
 }
 
 #pragma mark -
@@ -158,7 +206,6 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
 
 @end
 
