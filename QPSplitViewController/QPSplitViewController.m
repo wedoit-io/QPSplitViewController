@@ -173,12 +173,18 @@
 }
 
 - (void)toggleLeftSplit:(id)sender {
-    [UIView animateWithDuration:0.25f animations:^{
+    [UIView animateWithDuration:0.2f animations:^{
         if (self.leftSplitWidth == 0) {
             self.leftSplitWidth = self.startingLeftSplitWidth;
+            for (UIView *subviews in self.leftController.view.subviews) {
+                self.leftController.view.alpha = 1.0f;
+            }
         } else {
             self.startingLeftSplitWidth = self.leftSplitWidth;
             self.leftSplitWidth = 0;
+            for (UIView *subviews in self.leftController.view.subviews) {
+                self.leftController.view.alpha = 0.0f;
+            }
         }
     }];
 }
