@@ -102,6 +102,7 @@
         _rightController = rightController;
         
         [self setLeftBarButtonItem];
+        [self addTapGestureToRightSplit];
     }
 }
 
@@ -123,6 +124,9 @@
 
 - (void)changeRightViewController:(UIViewController *)rightController{
     UIViewController *oldController = _rightController;
+    for (UIGestureRecognizer *recognizer in oldController.view.gestureRecognizers) {
+        [self.view removeGestureRecognizer:recognizer];
+    }
     [oldController willMoveToParentViewController:nil];
     [oldController.view removeFromSuperview];
     [oldController removeFromParentViewController];
@@ -137,6 +141,7 @@
     _rightController = newRightController;
     
     [self setLeftBarButtonItem];
+    [self addTapGestureToRightSplit];
 }
 
 #pragma mark -
@@ -173,20 +178,53 @@
 }
 
 - (void)toggleLeftSplit:(id)sender {
+    if (self.leftSplitWidth == 0) {
+        [self showLeftSplit];
+    } else {
+        [self showRightSplitFullscreen];
+    }
+}
+
+- (void)showLeftSplit {
     [UIView animateWithDuration:0.2f animations:^{
-        if (self.leftSplitWidth == 0) {
-            self.leftSplitWidth = self.startingLeftSplitWidth;
-            for (UIView *subviews in self.leftController.view.subviews) {
-                self.leftController.view.alpha = 1.0f;
-            }
-        } else {
-            self.startingLeftSplitWidth = self.leftSplitWidth;
-            self.leftSplitWidth = 0;
-            for (UIView *subviews in self.leftController.view.subviews) {
-                self.leftController.view.alpha = 0.0f;
-            }
-        }
+        self.leftSplitWidth = self.startingLeftSplitWidth;
+        self.leftController.view.alpha = 1.0f;
     }];
+}
+
+- (void)showRightSplitFullscreen {
+    self.startingLeftSplitWidth = self.leftSplitWidth;
+    [UIView animateWithDuration:0.2f animations:^{
+        self.leftSplitWidth = 0;
+        self.leftController.view.alpha = 0.0f;
+    }];
+}
+
+#pragma mark -
+#pragma mark UISwipeGestureRecognizer
+- (void)addTapGestureToRightSplit {
+    UISwipeGestureRecognizer *leftSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self
+                                                                                           action:@selector(swipedLeft:)];
+    leftSwipeGesture.direction = (UISwipeGestureRecognizerDirectionLeft);
+    
+    UISwipeGestureRecognizer *rightSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self
+                                                                                            action:@selector(swipedRight:)];
+    rightSwipeGesture.direction = (UISwipeGestureRecognizerDirectionRight);
+    
+    [self.rightController.view addGestureRecognizer:leftSwipeGesture];
+    [self.rightController.view addGestureRecognizer:rightSwipeGesture];
+}
+
+#pragma mark -
+#pragma mark UISwipeGestureRecognizer events
+- (void)swipedRight:(UISwipeGestureRecognizer *)recognizer
+{
+    if (self.leftSplitWidth == 0) [self showLeftSplit];
+}
+
+- (void)swipedLeft:(UISwipeGestureRecognizer *)recognizer
+{
+    if (self.leftSplitWidth > 0) [self showRightSplitFullscreen];
 }
 
 #pragma mark -
