@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		570A05E71906851800AFFFD4 /* UIApplication+AppDimensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 570A05E61906851800AFFFD4 /* UIApplication+AppDimensions.m */; };
 		D9B63DB418E967950054A7F2 /* QPLeftTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B63DB318E967950054A7F2 /* QPLeftTableViewController.m */; };
 		D9B63DB718E967F70054A7F2 /* QPColorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9B63DB618E967F70054A7F2 /* QPColorViewController.m */; };
 		D9B63DBC18E96CB60054A7F2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9B63DBB18E96CB60054A7F2 /* QuartzCore.framework */; };
@@ -37,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		570A05E51906851800AFFFD4 /* UIApplication+AppDimensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+AppDimensions.h"; sourceTree = "<group>"; };
+		570A05E61906851800AFFFD4 /* UIApplication+AppDimensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+AppDimensions.m"; sourceTree = "<group>"; };
 		D9B63DB218E967950054A7F2 /* QPLeftTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QPLeftTableViewController.h; sourceTree = "<group>"; };
 		D9B63DB318E967950054A7F2 /* QPLeftTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QPLeftTableViewController.m; sourceTree = "<group>"; };
 		D9B63DB518E967F70054A7F2 /* QPColorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QPColorViewController.h; sourceTree = "<group>"; };
@@ -180,6 +183,8 @@
 				D9BC413918E948DB003808A8 /* QPSplitViewController.m */,
 				D9BC414118E94E93003808A8 /* QPSplitView.h */,
 				D9BC414218E94E93003808A8 /* QPSplitView.m */,
+				570A05E51906851800AFFFD4 /* UIApplication+AppDimensions.h */,
+				570A05E61906851800AFFFD4 /* UIApplication+AppDimensions.m */,
 			);
 			name = QPSplitViewController;
 			path = ../../QPSplitViewController;
@@ -284,6 +289,7 @@
 				D9BC411518E9485B003808A8 /* main.m in Sources */,
 				D9B63DB718E967F70054A7F2 /* QPColorViewController.m in Sources */,
 				D9BC414318E94E93003808A8 /* QPSplitView.m in Sources */,
+				570A05E71906851800AFFFD4 /* UIApplication+AppDimensions.m in Sources */,
 				D9BC411918E9485B003808A8 /* QPAppDelegate.m in Sources */,
 				D9BC413A18E948DB003808A8 /* QPSplitViewController.m in Sources */,
 				D9B63DB418E967950054A7F2 /* QPLeftTableViewController.m in Sources */,

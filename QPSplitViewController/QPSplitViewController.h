@@ -16,13 +16,11 @@
 
 @property (strong, nonatomic) UIViewController *rightController;
 
-@property (assign, nonatomic) CGFloat leftSplitWidth;
+@property (assign, nonatomic, setter = setLeftSplitWidth:) CGFloat leftSplitWidth;
 
-@property (assign, nonatomic) CGFloat rightSplitWidth;
+@property (assign, nonatomic, setter = setRightSplitWidth:) CGFloat rightSplitWidth;
 
-- (void)setLeftSplitWidth:(CGFloat)leftSplitWidth;
-
-- (void)setRightSplitWidth:(CGFloat)rightSplitWidth;
+@property (assign, nonatomic, setter = setRightSplitAlwaysFullscreenOnIphone:) BOOL isRightSplitAlwaysFullscreenOnIphone;
 
 @end
 

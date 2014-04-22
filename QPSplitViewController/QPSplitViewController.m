@@ -8,6 +8,7 @@
 
 #import "QPSplitViewController.h"
 #import "QPSplitView.h"
+#import "UIApplication+AppDimensions.h"
 
 @interface QPSplitViewController ()
 
@@ -23,11 +24,15 @@
     if (self) {
         CGRect frame = [[UIScreen mainScreen] bounds];
         
+        _isRightSplitAlwaysFullscreenOnIphone = NO;
+        
         // default left width = 260f
-        _leftSplitWidth = 260;
+        _leftSplitWidth =  260;
+        
         _rightSplitWidth = frame.size.width - _leftSplitWidth;
         _splitView = [[QPSplitView alloc] initWithFrame:frame controller:self];
         _splitView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        
         [self initLeftViewController:leftController];
         [self initRightViewController:rightController];
     }
@@ -78,6 +83,16 @@
         return;
     }
     [self changeRightViewController:rightController];
+}
+
+- (void)setRightSplitAlwaysFullscreenOnIphone:(BOOL)isRightSplitAlwaysFullscreenOnIphone
+{
+    _isRightSplitAlwaysFullscreenOnIphone = isRightSplitAlwaysFullscreenOnIphone;
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
+        _isRightSplitAlwaysFullscreenOnIphone) {
+        UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+        self.leftSplitWidth = [UIApplication sizeInOrientation:orientation].width;
+    }
 }
 
 #pragma mark -
@@ -249,6 +264,28 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    
+    if (self.isRightSplitAlwaysFullscreenOnIphone &&
+        [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        
+        CGFloat leftWidth = [UIApplication sizeInOrientation:toInterfaceOrientation].width;
+        
+        // always showing right view controller
+        if (self.leftSplitWidth == 0) {
+            // right view controller is already fully visible on screen
+            self.startingLeftSplitWidth = leftWidth;
+        }
+        else {
+            // showing right view controller
+            self.leftSplitWidth = leftWidth;
+            [self showRightSplitFullscreen];
+        }
+    }
 }
 
 @end
