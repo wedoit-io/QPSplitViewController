@@ -26,6 +26,7 @@
     [colorVC setColor:[UIColor grayColor]];
     UINavigationController *colorNavi = [[UINavigationController alloc] initWithRootViewController:colorVC];
     QPSplitViewController *splitVC = [[QPSplitViewController alloc] initWithLeftViewController:leftNavi rightViewController:colorNavi];
+    splitVC.leftSplitWidth = 100;
     
     self.window.rootViewController = splitVC;
     

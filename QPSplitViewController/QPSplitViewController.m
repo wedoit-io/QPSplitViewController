@@ -23,11 +23,7 @@
     self = [super init];
     if (self) {
         CGRect frame = [[UIScreen mainScreen] bounds];
-        
-        _isRightSplitAlwaysFullscreenOnIphone = NO;
-        
-        // default left width = 260f
-        _leftSplitWidth =  260;
+        _leftSplitWidth =  MIN(frame.size.width, frame.size.height);
         
         _rightSplitWidth = frame.size.width - _leftSplitWidth;
         _splitView = [[QPSplitView alloc] initWithFrame:frame controller:self];
@@ -83,16 +79,6 @@
         return;
     }
     [self changeRightViewController:rightController];
-}
-
-- (void)setRightSplitAlwaysFullscreenOnIphone:(BOOL)isRightSplitAlwaysFullscreenOnIphone
-{
-    _isRightSplitAlwaysFullscreenOnIphone = isRightSplitAlwaysFullscreenOnIphone;
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
-        _isRightSplitAlwaysFullscreenOnIphone) {
-        UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
-        self.leftSplitWidth = [UIApplication sizeInOrientation:orientation].width;
-    }
 }
 
 #pragma mark -
@@ -245,8 +231,16 @@
 #pragma mark -
 #pragma mark Change Width
 - (void)setLeftSplitWidth:(CGFloat)leftSplitWidth {
-    [_splitView setLeftSplitWidth:leftSplitWidth];
+    
     _leftSplitWidth = leftSplitWidth;
+    
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
+        UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+        CGRect frame = [[UIScreen mainScreen] bounds];
+        [_splitView setLeftSplitWidth:MIN(frame.size.width, frame.size.height)];
+    } else {
+        [_splitView setLeftSplitWidth:_leftSplitWidth];
+    }
 }
 
 - (void)setRightSplitWidth:(CGFloat)rightSplitWidth {
@@ -266,25 +260,18 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
     
-    if (self.isRightSplitAlwaysFullscreenOnIphone &&
-        [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        
-        CGFloat leftWidth = [UIApplication sizeInOrientation:toInterfaceOrientation].width;
-        
-        // always showing right view controller
-        if (self.leftSplitWidth == 0) {
-            // right view controller is already fully visible on screen
-            self.startingLeftSplitWidth = leftWidth;
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        if (UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+            CGRect frame = [[UIScreen mainScreen] bounds];
+            [_splitView setLeftSplitWidth:MIN(frame.size.width, frame.size.height)];
+        } else {
+            [_splitView setLeftSplitWidth:self.leftSplitWidth];
         }
-        else {
-            // showing right view controller
-            self.leftSplitWidth = leftWidth;
-            [self showRightSplitFullscreen];
-        }
+        
     }
 }
 

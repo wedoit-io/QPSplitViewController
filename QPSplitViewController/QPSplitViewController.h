@@ -20,8 +20,6 @@
 
 @property (assign, nonatomic, setter = setRightSplitWidth:) CGFloat rightSplitWidth;
 
-@property (assign, nonatomic, setter = setRightSplitAlwaysFullscreenOnIphone:) BOOL isRightSplitAlwaysFullscreenOnIphone;
-
 @end
 
 
