@@ -12,18 +12,27 @@
 
 @interface QPSplitViewController ()
 
-@property (assign, nonatomic) CGFloat startingLeftSplitWidth;
+@property (assign, nonatomic) CGFloat actualLeftSplitWidth;
 @property (strong, nonatomic) QPSplitView *splitView;
 
 @end
 
 @implementation QPSplitViewController
 
-- (instancetype)initWithLeftViewController:(UIViewController *)leftController rightViewController:(UIViewController *)rightController {
+- (instancetype)initWithLeftViewController:(UIViewController *)leftController
+                       rightViewController:(UIViewController *)rightController {
     self = [super init];
     if (self) {
         CGRect frame = [[UIScreen mainScreen] bounds];
-        _leftSplitWidth =  MIN(frame.size.width, frame.size.height);
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone){
+            // on iphone, default left width is set equal the width of the
+            // screen when in portrait
+            _leftSplitWidth =  MIN(frame.size.width, frame.size.height);
+        } else {
+            _leftSplitWidth = 260.0f;
+        }
+        
+        _actualLeftSplitWidth = _leftSplitWidth;
         
         _rightSplitWidth = frame.size.width - _leftSplitWidth;
         _splitView = [[QPSplitView alloc] initWithFrame:frame controller:self];
@@ -35,14 +44,12 @@
     return self;
 }
 
-- (instancetype)init
-{
+- (instancetype)init {
     return [self initWithLeftViewController:nil rightViewController:nil];
 }
-- (void)viewDidLoad
-{
+
+- (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
 }
 
 - (void)loadView {
@@ -51,11 +58,18 @@
     
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self updateActualLeftSplitWidthTogglingLeftSplit:NO];
+}
+
 #pragma mark -
 #pragma mark Set Controllers methods
+
 - (void)setLeftController:(UIViewController *)leftController {
     [self setLeftController:leftController animated:NO];
 }
+
 - (void)setLeftController:(UIViewController *)leftController animated:(BOOL)animated {
     if (![self isViewLoaded]) {
         [self initLeftViewController:leftController];
@@ -70,6 +84,7 @@
 - (void)setRightController:(UIViewController *)rightController {
     [self setRightController:rightController animated:NO];
 }
+
 - (void)setRightController:(UIViewController *)rightController animated:(BOOL)animated {
     if (![self isViewLoaded]) {
         [self initRightViewController:rightController];
@@ -83,6 +98,7 @@
 
 #pragma mark -
 #pragma mark - Transition between controllers
+
 - (void)initLeftViewController:(UIViewController *)leftController {
     if (leftController) {
         [self addChildViewController:leftController];
@@ -116,6 +132,7 @@
     leftController.view.frame = _splitView.leftView.bounds;
     [self changeNewLeftController:leftController];
 }
+
 - (void)changeNewLeftController:(UIViewController *)newLeftController {
     [self addChildViewController:newLeftController];
     [_splitView.leftView addSubview:newLeftController.view];
@@ -135,6 +152,7 @@
     rightController.view.frame = _splitView.rightView.bounds;
     [self changeNewRightController:rightController];
 }
+
 - (void)changeNewRightController:(UIViewController *)newRightController {
     [self addChildViewController:newRightController];
     [_splitView.rightView addSubview:newRightController.view];
@@ -148,9 +166,11 @@
 #pragma mark -
 #pragma mark Left bar button item for right panel
 
-- (UIBarButtonItem *)leftButtonForCenterPanel
-{
-    return [[UIBarButtonItem alloc] initWithImage:[[self class] defaultImage] style:UIBarButtonItemStylePlain target:self action:@selector(toggleLeftSplit:)];
+- (UIBarButtonItem *)leftButtonForCenterPanel {
+    return [[UIBarButtonItem alloc] initWithImage:[[self class] defaultImage]
+                                            style:UIBarButtonItemStylePlain
+                                           target:self
+                                           action:@selector(toggleLeftSplit:)];
 }
 
 + (UIImage *)defaultImage {
@@ -179,7 +199,7 @@
 }
 
 - (void)toggleLeftSplit:(id)sender {
-    if (self.leftSplitWidth == 0) {
+    if (self.actualLeftSplitWidth == 0) {
         [self showLeftSplit];
     } else {
         [self showRightSplitFullscreen];
@@ -188,21 +208,21 @@
 
 - (void)showLeftSplit {
     [UIView animateWithDuration:0.2f animations:^{
-        self.leftSplitWidth = self.startingLeftSplitWidth;
+        [self updateActualLeftSplitWidthTogglingLeftSplit:YES];
         self.leftController.view.alpha = 1.0f;
     }];
 }
 
 - (void)showRightSplitFullscreen {
-    self.startingLeftSplitWidth = self.leftSplitWidth;
     [UIView animateWithDuration:0.2f animations:^{
-        self.leftSplitWidth = 0;
+        [self updateActualLeftSplitWidthTogglingLeftSplit:YES];
         self.leftController.view.alpha = 0.0f;
     }];
 }
 
 #pragma mark -
 #pragma mark UISwipeGestureRecognizer
+
 - (void)addTapGestureToRightSplit {
     UISwipeGestureRecognizer *leftSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self
                                                                                            action:@selector(swipedLeft:)];
@@ -218,29 +238,73 @@
 
 #pragma mark -
 #pragma mark UISwipeGestureRecognizer events
-- (void)swipedRight:(UISwipeGestureRecognizer *)recognizer
-{
+
+- (void)swipedRight:(UISwipeGestureRecognizer *)recognizer {
     if (self.leftSplitWidth == 0) [self showLeftSplit];
 }
 
-- (void)swipedLeft:(UISwipeGestureRecognizer *)recognizer
-{
+- (void)swipedLeft:(UISwipeGestureRecognizer *)recognizer {
     if (self.leftSplitWidth > 0) [self showRightSplitFullscreen];
 }
 
 #pragma mark -
 #pragma mark Change Width
+
 - (void)setLeftSplitWidth:(CGFloat)leftSplitWidth {
-    
     _leftSplitWidth = leftSplitWidth;
+    [self updateActualLeftSplitWidthTogglingLeftSplit:NO];
+}
+
+- (void)updateActualLeftSplitWidthTogglingLeftSplit:(BOOL)toggleLeftSplit {
     
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
-        UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
-        CGRect frame = [[UIScreen mainScreen] bounds];
-        [_splitView setLeftSplitWidth:MIN(frame.size.width, frame.size.height)];
+    CGRect frame = [[UIScreen mainScreen] bounds];
+    CGFloat iphoneFullScreenWidth = MIN(frame.size.width, frame.size.height);
+    
+    if (toggleLeftSplit) {
+        if (self.actualLeftSplitWidth == 0) {
+            // expand left split
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
+                UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+                // on iphone-portrait, expand to fullscreen
+                self.actualLeftSplitWidth = iphoneFullScreenWidth;
+            } else {
+                // expand to left split width value
+                self.actualLeftSplitWidth = self.leftSplitWidth;
+            }
+        } else {
+            // hide left split
+            self.actualLeftSplitWidth = 0;
+        }
+        
+        // expand/compress!
+        [_splitView setLeftSplitWidth:self.actualLeftSplitWidth];
     } else {
-        [_splitView setLeftSplitWidth:_leftSplitWidth];
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+            if (UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+                // iphone-portrait
+                if (self.actualLeftSplitWidth != 0) {
+                    // if actual left split width is != 0 and the device is in
+                    // phone-portrait, it means that we need to expand to fullscreen
+                    self.actualLeftSplitWidth = iphoneFullScreenWidth;
+                    [_splitView setLeftSplitWidth:self.actualLeftSplitWidth];
+                } else {
+                    // right split is fullscreen, left is compressed, nothing to do
+                }
+            } else {
+                if (self.actualLeftSplitWidth != 0) {
+                    // if actual left split width is != 0 and the device is in
+                    // phone-landscape, it means that we need to expand to left split width
+                    self.actualLeftSplitWidth = self.leftSplitWidth;
+                    [_splitView setLeftSplitWidth:self.actualLeftSplitWidth];
+                } else {
+                    // right split is fullscreen, left is compressed, nothing to do
+                }
+            }
+        } else if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+            // nothing to do
+        }
     }
+    
 }
 
 - (void)setRightSplitWidth:(CGFloat)rightSplitWidth {
@@ -249,30 +313,14 @@
 }
 
 #pragma mark - Rotation Support
-- (NSUInteger)supportedInterfaceOrientations
-{
+
+- (NSUInteger)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        if (UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
-            CGRect frame = [[UIScreen mainScreen] bounds];
-            [_splitView setLeftSplitWidth:MIN(frame.size.width, frame.size.height)];
-        } else {
-            [_splitView setLeftSplitWidth:self.leftSplitWidth];
-        }
-        
-    }
+    [self updateActualLeftSplitWidthTogglingLeftSplit:NO];
 }
 
 @end
@@ -286,9 +334,8 @@
     UIViewController *parent = self;
     Class revealClass = [QPSplitViewController class];
     
-    while ( nil != (parent = [parent parentViewController]) && ![parent isKindOfClass:revealClass] )
-    {
-    }
+    while (nil != (parent = [parent parentViewController]) &&
+           ![parent isKindOfClass:revealClass] ){}
     
     return (id)parent;
 }
