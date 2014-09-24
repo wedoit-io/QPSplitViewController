@@ -263,10 +263,17 @@
     if (toggleLeftSplit) {
         if (self.actualLeftSplitWidth == 0) {
             // expand left split
-            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone &&
-                UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
-                // on iphone-portrait, expand to fullscreen
-                self.actualLeftSplitWidth = iphoneFullScreenWidth;
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone){
+                if(UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation)) {
+                    // on iphone-portrait, expand to fullscreen
+                    self.actualLeftSplitWidth = iphoneFullScreenWidth;
+                } else if (MAX(frame.size.width, frame.size.height) < 568) {
+                    // in landscape-iphone with 'small' screen, expand left split to fullscreen
+                    self.actualLeftSplitWidth = MAX(frame.size.width, frame.size.height);
+                } else {
+                    // expand to left split width value
+                    self.actualLeftSplitWidth = self.leftSplitWidth;
+                }
             } else {
                 // expand to left split width value
                 self.actualLeftSplitWidth = self.leftSplitWidth;
@@ -291,7 +298,11 @@
                     // right split is fullscreen, left is compressed, nothing to do
                 }
             } else {
-                if (self.actualLeftSplitWidth != 0) {
+                if (self.actualLeftSplitWidth != 0 && MAX(frame.size.width, frame.size.height) < 568) {
+                    // in landscape-iphone with 'small' screen, expand left split to fullscreen
+                    self.actualLeftSplitWidth = MAX(frame.size.width, frame.size.height);
+                    [_splitView setLeftSplitWidth:self.actualLeftSplitWidth];
+                } else if (self.actualLeftSplitWidth != 0) {
                     // if actual left split width is != 0 and the device is in
                     // phone-landscape, it means that we need to expand to left split width
                     self.actualLeftSplitWidth = self.leftSplitWidth;
@@ -341,4 +352,3 @@
 }
 
 @end
-
